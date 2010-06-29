@@ -1,0 +1,7 @@
+A standalone commandline utility converting Kiwi image description
+to Puppet recipes.
+
+This conversion shall include at a minimum the section
+describing what packages are in the image.
+
+https://fate.novell.com/309497
