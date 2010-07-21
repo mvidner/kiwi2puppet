@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.authors = ["Martin Vidner"]
   s.date = %q{2010-06-30}
   s.email = "mvidner@suse.cz"
-  s.executables = ["kiwi2puppet"]
+  s.executables = ["kiwi2puppet", "kiwi2puppet-bootstrap"]
   s.extra_rdoc_files = ["COPYING", "README"]
   s.files = ["bin/kiwi2puppet", "lib/.nothing", "COPYING", "README"]
   s.homepage = "http://github.com/mvidner/kiwi2puppet"

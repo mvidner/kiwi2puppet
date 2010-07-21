@@ -1,0 +1,58 @@
+#! /bin/sh
+usage () {
+    cat <<EOF
+Help with testing kiwi2puppet by getting puppet to a target machine.
+Installation:
+  curl -fo bs \
+    http://github.com/mvidner/kiwi2puppet/raw/master/bin/kiwi2puppet-bootstrap \
+  && sh bs [options]
+
+Usage: kiwi2puppet-bootstrap [-s] [-r] [-P]
+    -s start sshd
+    -r add repository
+    -P don't install Puppet
+EOF
+    exit $RC
+}
+
+set -o errexit
+SSH=false
+REPO=false
+PUPPET=true
+USAGE=false
+while getopts hPrs FLAG; do
+    case $FLAG in
+	h) USAGE=true;;
+	P) PUPPET=false;;
+	r) REPO=true;;
+	s) SSH=true;;
+	*) USAGE=true; RC=1;;
+    esac
+done
+shift `expr $OPTIND - 1`
+
+if $USAGE; then
+    usage
+fi
+
+# INFO
+cat /etc/*release
+ip addr show
+
+# ENABLE SSH
+if $SSH; then
+# chkconfig sshd on
+    /etc/init.d/sshd start
+fi
+
+# ADD REPO
+if $REPO; then
+    ARCH=`uname -i`; if [ $ARCH = i386 ]; then ARCH=i586; fi
+    zypper ar http://download.opensuse.org/distribution/11.2/repo/oss repo-oss
+# zypper ar http://fallback.suse.cz/full/full-11.2-$ARCH repo-full
+fi
+
+# GET PUPPET
+if $PUPPET; then
+    zypper in puppet
+fi
