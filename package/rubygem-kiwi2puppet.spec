@@ -28,6 +28,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-build
 BuildRequires:  rubygems_with_buildroot_patch
 %rubygems_requires
 Requires:       ruby >= 1.8.6
+Requires:	rubygem-nokogiri
 #BuildRequires:  ruby-devel >= 1.8.6
 #
 Url:            http://github.com/mvidner/kiwi2puppet

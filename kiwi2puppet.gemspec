@@ -12,4 +12,6 @@ Gem::Specification.new do |s|
   s.files = ["bin/kiwi2puppet", "lib/.nothing", "COPYING", "README"]
   s.homepage = "http://github.com/mvidner/kiwi2puppet"
   s.summary = "Convert KIWI image descriptions to Puppet manifests"
+
+  s.add_dependency "nokogiri"
 end
