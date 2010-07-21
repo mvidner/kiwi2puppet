@@ -54,8 +54,15 @@ puts "Package { provider => 'rpm' }"
 
 doc.xpath("/image/repository/source").each do |repo|
   # http://docs.puppetlabs.com/guides/types/yumrepo.html
-  repo_r = Resource.new "yumrepo", repo["path"], "baseurl" => repo["path"]
-  print repo_r
+#  repo_r = Resource.new "yumrepo", repo["path"], "baseurl" => repo["path"]
+# This does not work, zypper repos are similar but not same as yum repos.
+# Even this fails because we have a section inside the repo files
+## mkdir /etc/yum
+## echo '[main]' >> /etc/yum/yum.conf
+## echo 'reposdir = /etc/zypp/repos.d' >> /etc/yum/yum.comf
+# TODO Try with a new type (Could not find resource type zypprepo)
+#  repo_r = Resource.new "zypprepo", repo["path"], "baseurl" => repo["path"]
+#  print repo_r
 end
 
 # TODO TEST: get some complete kiwi profile,
@@ -67,10 +74,12 @@ doc.xpath("/image/users").each do |group| # really, users==group
   group.xpath("user").each do |user|
     # http://docs.puppetlabs.com/guides/types/user.html
     user_r = Resource.new "user", user["name"], {
-      "shell" => user["shell"],
       "password" => user["pwd"],
       "gid" => group_r.title
     }
+    if user["shell"]
+      user_r.parameters["shell"] = user["shell"]
+    end
     print user_r
   end
 end
