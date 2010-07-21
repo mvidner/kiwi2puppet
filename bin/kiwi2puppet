@@ -18,6 +18,7 @@
 # To contact Novell about this file by physical or electronic mail,
 # you may find current contact information at www.novell.com
 #++
+require "optparse"
 require 'rubygems'
 require 'nokogiri'
 
@@ -36,21 +37,39 @@ class Resource
   end
 end
 
-puts "# Generated from #{ARGV[0]}"
-puts "# on #{Time.now}"
-puts "# using kiwi2puppet [URL]"
+output = nil
+OptionParser.new do |opts|
+  opts.on("-o", "--output FILENAME",
+          "(defaults to image_name.pp)") do |fn| output = fn end
+end.parse!
 
 doc = Nokogiri::XML(File.open(ARGV[0]))
+name = doc.at_xpath "/image/@name"
+
+if output.nil?
+  output = "#{name}.pp"
+  $stderr.puts "Writing the output to #{output}"
+end
+if output == "-"
+  out = $stdout
+else
+  out = File.open output, "w"
+end
+
+# redirect to output
+out.puts "# Generated from #{ARGV[0]} (#{name})"
+out.puts "# on #{Time.now}"
+out.puts "# using kiwi2puppet: http://github.com/mvidner/kiwi2puppet"
 
 packages = doc.at_xpath "/image/packages[@type='image']"
 packages.xpath('package').each do |p|
   # http://docs.puppetlabs.com/guides/types/package.html
   r = Resource.new "package", p["name"], "ensure" => "present"
-  print r
+  out.print r
 end
 # 'warning: Found multiple default providers for package: gem, rpm; using gem'
-puts "# do not prefer gem"
-puts "Package { provider => 'rpm' }"
+out.puts "# do not prefer gem"
+out.puts "Package { provider => 'rpm' }"
 
 doc.xpath("/image/repository/source").each do |repo|
   # http://docs.puppetlabs.com/guides/types/yumrepo.html
@@ -62,7 +81,7 @@ doc.xpath("/image/repository/source").each do |repo|
 ## echo 'reposdir = /etc/zypp/repos.d' >> /etc/yum/yum.comf
 # TODO Try with a new type (Could not find resource type zypprepo)
 #  repo_r = Resource.new "zypprepo", repo["path"], "baseurl" => repo["path"]
-#  print repo_r
+#  out.print repo_r
 end
 
 # TODO TEST: get some complete kiwi profile,
@@ -70,16 +89,16 @@ end
 doc.xpath("/image/users").each do |group| # really, users==group
   # http://docs.puppetlabs.com/guides/types/group.html
   group_r = Resource.new "group", group["group"]
-  print group_r
+  out.print group_r
   group.xpath("user").each do |user|
     # http://docs.puppetlabs.com/guides/types/user.html
     user_r = Resource.new "user", user["name"], {
-      "password" => user["pwd"],
+      "password" => user["pwd"], # but do we WANT to maintain the orig password?
       "gid" => group_r.title
     }
     if user["shell"]
       user_r.parameters["shell"] = user["shell"]
     end
-    print user_r
+    out.print user_r
   end
 end
